@@ -36,7 +36,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   };
 
   const blogData = await getBlogPosts(queryParams);
-  const { posts, total } = blogData;
+  const { posts = [], total = 0 } = blogData || {};
   
   const featuredPosts = posts.filter(post => post.featured);
   const regularPosts = posts.filter(post => !post.featured);

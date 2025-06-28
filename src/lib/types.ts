@@ -63,4 +63,53 @@ export interface Tag {
   name: string;
   slug: string;
   count: number;
-} 
+}
+
+// API响应相关类型定义
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+  code?: number;
+}
+
+// API错误响应类型
+export interface ApiError {
+  success: false;
+  message: string;
+  code: number;
+  details?: Record<string, unknown>;
+}
+
+// HTTP请求配置类型
+export interface RequestConfig {
+  timeout?: number;
+  headers?: Record<string, string>;
+  cache?: boolean;
+  retries?: number;
+}
+
+// 分页响应类型
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// GitHub仓库类型(用于getGit接口)
+export interface GitHubRepository {
+  id: number;
+  name: string;
+  full_name: string;
+  description: string | null;
+  html_url: string;
+  clone_url: string;
+  stargazers_count: number;
+  forks_count: number;
+  language: string | null;
+  created_at: string;
+  updated_at: string;
+  topics: string[];
+}
