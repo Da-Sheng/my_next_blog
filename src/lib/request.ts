@@ -10,6 +10,29 @@ const DEFAULT_CONFIG: RequestConfig = {
   retries: 3,
 };
 
+// 日志工具函数
+const logger = {
+  request: (method: string, url: string, body?: unknown) => {
+    console.log(`\x1b[34m[API请求]\x1b[0m ${method} ${url}`);
+    if (body && process.env.NODE_ENV !== 'production') {
+      console.log(`\x1b[34m[请求体]\x1b[0m`, JSON.stringify(body, null, 2));
+    }
+  },
+  response: (method: string, url: string, status: number, data?: unknown, time?: number) => {
+    const statusColor = status >= 200 && status < 300 ? '\x1b[32m' : '\x1b[31m';
+    console.log(`${statusColor}[API响应]\x1b[0m ${method} ${url} - 状态: ${status}${time ? ` - 耗时: ${time}ms` : ''}`);
+    if (data && process.env.NODE_ENV !== 'production') {
+      console.log(`\x1b[36m[响应体]\x1b[0m`, JSON.stringify(data, null, 2));
+    }
+  },
+  error: (method: string, url: string, error: Error) => {
+    console.error(`\x1b[31m[API错误]\x1b[0m ${method} ${url} - ${error.message}`);
+    if (error instanceof RequestError && error.details) {
+      console.error(`\x1b[31m[错误详情]\x1b[0m`, error.details);
+    }
+  }
+};
+
 // 自定义错误类
 export class RequestError extends Error {
   constructor(
@@ -114,16 +137,35 @@ async function request<T>(
 ): Promise<T> {
   const config = { ...DEFAULT_CONFIG, ...customConfig };
   const url = buildURL(endpoint);
+  const method = options.method || 'GET';
+  const requestBody = options.body ? JSON.parse(options.body as string) : undefined;
   
+  // 记录请求日志
+  logger.request(method, url, requestBody);
+  
+  const startTime = Date.now();
   let lastError: Error | null = null;
   
   // 重试逻辑
   for (let attempt = 1; attempt <= (config.retries || 1); attempt++) {
     try {
+      if (attempt > 1) {
+        console.log(`\x1b[33m[API重试]\x1b[0m ${method} ${url} - 第${attempt}次尝试`);
+      }
+      
       const response = await performFetch(url, options, config);
-      return await handleResponse<T>(response);
+      const data = await handleResponse<T>(response);
+      
+      // 记录响应日志
+      const endTime = Date.now();
+      logger.response(method, url, response.status, data, endTime - startTime);
+      
+      return data;
     } catch (error) {
       lastError = error as Error;
+      
+      // 记录错误日志
+      logger.error(method, url, lastError);
       
       // 最后一次尝试，不再重试
       if (attempt === config.retries) {

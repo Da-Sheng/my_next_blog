@@ -106,10 +106,25 @@ export interface GitHubRepository {
   description: string | null;
   html_url: string;
   clone_url: string;
+  ssh_url: string;
+  language: string | null;
   stargazers_count: number;
   forks_count: number;
-  language: string | null;
+  watchers_count: number;
+  size: number;
   created_at: string;
   updated_at: string;
+  pushed_at: string;
   topics: string[];
+  visibility: string;
+  archived: boolean;
+  disabled: boolean;
+  fork: boolean;
+}
+
+// API响应包装类型
+export interface ApiResponseWrapper<T> {
+  success: boolean;
+  data: T;
+  message: string;
 }

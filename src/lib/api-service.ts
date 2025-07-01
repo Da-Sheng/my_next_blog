@@ -3,7 +3,8 @@ import {
   BlogPost, 
   BlogListResponse, 
   BlogQueryParams,
-  GitHubRepository 
+  GitHubRepository,
+  ApiResponseWrapper
 } from './types';
 
 /**
@@ -17,7 +18,7 @@ export const githubApi = {
    */
   async getRepositories(username = 'Da-Sheng'): Promise<GitHubRepository[]> {
     // API返回格式: {success: true, data: GitHubRepository[], message}
-    const response = await httpClient.get<{success: boolean, data: GitHubRepository[], message: string}>(`/api/getGit?username=${username}`);
+    const response = await httpClient.get<ApiResponseWrapper<GitHubRepository[]>>(`/api/getGit?username=${username}`);
     return response.data;
   },
 };
